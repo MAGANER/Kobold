@@ -36,8 +36,9 @@ def parse(lines):
     macro_table = {}
     for l in lines:
         value = l.split('->')
+        value[0] = value[0].replace(' ','')
         if len(value) > 2:
-            _value = [value[0]] 
+            _value = [value[0]]
             _value.append(reduce(lambda x,y: x+y,valuef[1:]))
             _value[1] = _value[1][:-1] #delete last \n symbol
             macro_table[_value[0]] = _value[1]
@@ -46,13 +47,46 @@ def parse(lines):
             macro_table[value[0]] = value[1]
     return macro_table
 
+def find_all(symbol, line):
+    counter   = 0
+    positions = []
+    for ch in line:
+        if symbol == ch:
+            positions.append(counter)
+        counter+= 1
+    return positions
+
+def compute_generative_expression(line,macro_table):
+    result  = line
+    positions = find_all('{',line)
+    if len(positions) > 0:
+        for pos in positions:
+            end_pos = line.find("}",pos)
+            if(end_pos != -1):
+                sub_line = line[pos+1:end_pos]
+                values = sub_line.split(',')
+                if not values[0].isdigit():
+                    print(f"first arg of generative expresion must be digit value! {line}")
+                else:
+                    new_line = int(values[0])*values[1]
+                    result = result.replace(result[pos:end_pos+1],new_line)
+            else:
+                print(f"incorrect generative expression {line}")
+        return result
+    else:
+        return None
 
 def match_macros(macro_table,line):
     for key in macro_table:
         if key in line:
-            new_line = line.replace(key,macro_table[key])
-            return new_line
-            
+            computed = compute_generative_expression(macro_table[key],macro_table)
+            val_to_set = ""
+            if computed != None:
+                val_to_set = computed
+            else:
+                val_to_set = macro_table[key]
+            new_line = line.replace(key,val_to_set)
+            return new_line            
 def match_macroses(file_path,macro_table):
     lines = []
     with open(file_path,"r") as f:

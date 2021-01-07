@@ -21,6 +21,9 @@ def separate(files):
             
         if ".ko" not in f:
             sources.append(f)
+    if len(macro_file) == 0:
+        print("you should pass macro file!")
+        exit(-1)
 
     return (macro_file,sources)
 def read(macro_file):

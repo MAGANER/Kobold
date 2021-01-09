@@ -5,7 +5,8 @@ This is simple macro-processor can be used for simple text replacing, but
 also there can be complex expression computed before string replacing.
 
 # Syntax
-In common way:
+In common way:<br/>
+(Also it's good to leave space in the end of the line)
 
 ***macro1 -> expression<br/>
 macron -> expression_n***

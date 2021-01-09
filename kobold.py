@@ -116,7 +116,43 @@ def match_macroses(file_path,macro_table):
                 lines.append(line)
             else:
                 lines.append(matched)
+    return lines
 
+def pass_value(line,macro_table):
+    new_line = []
+    words = line.split(' ')
+    not_changed_counter = 0
+    for word in words:
+        if len(word) > 0:
+            check_is_macro = word[0] == r'$'
+            is_macro = word[1:] in macro_table
+            if check_is_macro and is_macro:
+                macro_val = macro_table[word[1:]]
+                computed = compute_generative_expression(macro_val,macro_table)
+                if computed == None:
+                    new_line.append(macro_val)
+                else:
+                    new_line.append(computed)
+            else:
+                new_line.append(word)
+                not_changed_counter += 1
+    if len(words) == not_changed_counter:
+        return line
+    else:
+        return reduce(lambda x,y: x+' '+y+' ',new_line)
+            
+            
+def pass_values(lines,macro_table):
+    result = []
+    for line in lines:
+        new_line = pass_value(line,macro_table)
+        if new_line != None:
+            result.append(new_line)
+        else:
+            result.append(line)
+    return result
+
+def write_result(file_path,lines):
     with open(file_path,"w") as f:
         f.seek(0)
         f.truncate()
@@ -132,4 +168,6 @@ files_to_change = files[1]
 macro_table= parse(read(macro_file))
 
 for file in files_to_change:
-    match_macroses(file,macro_table)
+   lines = match_macroses(file,macro_table)
+   lines = pass_values(lines,macro_table)
+   write_result(file,lines)

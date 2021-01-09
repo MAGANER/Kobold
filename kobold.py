@@ -7,9 +7,6 @@
 #Also there is an ability to generate expression
 #macro = {n,expr} some another expression
 #Instead of macro there will be expression duplicated n times
-#Also you can use macro inside another one
-#write something like this:
-#macro = expr $another_macro
 
 import sys
 from functools import reduce
@@ -90,12 +87,15 @@ def compute_generative_expression(line,macro_table):
         return result
     else:
         return None
-####
 
 #main functions 
 def match_macro(macro_table,line):
     '''process all macroses within the line'''
-    for key in macro_table:
+    counter = 0
+
+    take_key = lambda counter, table: list(macro_table.keys())[counter]
+    while counter < len(macro_table):
+        key = take_key(counter,macro_table)
         if key in line:
             computed = compute_generative_expression(macro_table[key],macro_table)
             val_to_set = ""
@@ -104,7 +104,8 @@ def match_macro(macro_table,line):
             else:
                 val_to_set = macro_table[key]
             new_line = line.replace(key,val_to_set)
-            return new_line            
+            return new_line
+        counter+= 1
 def match_macroses(file_path,macro_table):
     '''process all files'''
     lines = []
@@ -116,7 +117,6 @@ def match_macroses(file_path,macro_table):
             else:
                 lines.append(matched)
 
-    print(lines)
     with open(file_path,"w") as f:
         f.seek(0)
         f.truncate()

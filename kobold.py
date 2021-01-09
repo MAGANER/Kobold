@@ -2,14 +2,23 @@
 #or even to create completely new language based on another one!
 #exampe of use:$python kobold.py source1.cpp source2.cpp header1.h macro.ko
 #syntax of Kobold is pretty simple
-#macro = expr
+#macro   = expr
 #macro_n = expr
+#Also there is an ability to generate expression
+#macro = {n,expr} some another expression
+#Instead of macro there will be expression duplicated n times
+#Also you can use macro inside another one
+#write something like this:
+#macro = expr $another_macro
+
 import sys
 from functools import reduce
 
+#functions to get data to process
 def get_files():
     return sys.argv[1:]
 def separate(files):
+    '''separates terminal arguments to get sources and macro file'''
     macro_file = ""
     sources    = []
     for f in files:
@@ -33,8 +42,10 @@ def read(macro_file):
             lines.append(l)
     return lines
 def parse(lines):
+    '''read macro file and create hash table of macroses'''
     macro_table = {}
     for l in lines:
+        
         value = l.split('->')
         value[0] = value[0].replace(' ','')
         if len(value) > 2:
@@ -46,8 +57,11 @@ def parse(lines):
             value[1] = value[1][:-1]
             macro_table[value[0]] = value[1]
     return macro_table
+#####
 
+#special functions
 def find_all(symbol, line):
+    '''returns the position of any symbol contained with line'''
     counter   = 0
     positions = []
     for ch in line:
@@ -57,6 +71,7 @@ def find_all(symbol, line):
     return positions
 
 def compute_generative_expression(line,macro_table):
+    '''compute expression: {n, expr}'''
     result  = line
     positions = find_all('{',line)
     if len(positions) > 0:
@@ -75,8 +90,11 @@ def compute_generative_expression(line,macro_table):
         return result
     else:
         return None
+####
 
-def match_macros(macro_table,line):
+#main functions 
+def match_macro(macro_table,line):
+    '''process all macroses within the line'''
     for key in macro_table:
         if key in line:
             computed = compute_generative_expression(macro_table[key],macro_table)
@@ -88,10 +106,11 @@ def match_macros(macro_table,line):
             new_line = line.replace(key,val_to_set)
             return new_line            
 def match_macroses(file_path,macro_table):
+    '''process all files'''
     lines = []
     with open(file_path,"r") as f:
         for line in f:
-            matched = match_macros(macro_table,line)
+            matched = match_macro(macro_table,line)
             if matched == None:
                 lines.append(line)
             else:

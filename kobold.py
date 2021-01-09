@@ -146,6 +146,9 @@ def pass_values(lines,macro_table):
     result = []
     for line in lines:
         new_line = pass_value(line,macro_table)
+        if '$' in new_line:
+            print(new_line)
+            new_line = pass_value(new_line,macro_table)
         if new_line != None:
             result.append(new_line)
         else:

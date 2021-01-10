@@ -7,6 +7,12 @@
 #Also there is an ability to generate expression
 #macro = {n,expr} some another expression
 #Instead of macro there will be expression duplicated n times
+#Let imagine the moment, where you don't need macro, but
+#if you write it, you get the expression of macro
+#so you can write this: 'macro' and this macro won't be computed
+#but if you need to pass macro result between quotes?
+#then you need to write just ''macro'' and you will get 'result'
+
 
 import sys
 from functools import reduce
@@ -89,29 +95,44 @@ def compute_generative_expression(line,macro_table):
         return None
 
 #main functions 
-def match_macro(macro_table,line):
-    '''process all macroses within the line'''
-    counter = 0
+def _match_macro(macro_table,line):
+    '''set all macro values into the line'''
+    new_line = []
+    words = line.split(' ')
+    
+    def generate_macro(word,macro_table):
+        '''sub function to compute macro
+           there can be some expression
+           so it must be checked
+        '''
+        computed = compute_generative_expression(macro_table[word],macro_table)
+        val_to_set = ""
+        if computed != None:
+            val_to_set = computed
+        else:
+            val_to_set = macro_table[word]
+        return val_to_set
 
-    take_key = lambda counter, table: list(macro_table.keys())[counter]
-    while counter < len(macro_table):
-        key = take_key(counter,macro_table)
-        if key in line:
-            computed = compute_generative_expression(macro_table[key],macro_table)
-            val_to_set = ""
-            if computed != None:
-                val_to_set = computed
-            else:
-                val_to_set = macro_table[key]
-            new_line = line.replace(key,val_to_set)
-            return new_line
-        counter+= 1
+    for word in words:
+        not_empty = len(word) > 0
+        pass_val_embraced_with_quotes = word[0:2] == "''" and word[len(word)-2:] == "''"
+        word_with_no_quotes = word[2:len(word)-2]
+        if not_empty and word in macro_table:
+            value = generate_macro(word,macro_table)
+            new_line.append(value)
+        elif not_empty and pass_val_embraced_with_quotes and word_with_no_quotes in macro_table:
+            value = generate_macro(word_with_no_quotes,macro_table)
+            new_line.append(f"'{value}'")
+        elif not_empty and word not in macro_table:
+            new_line.append(word)
+            
+    return reduce(lambda x,y:x+' '+y+' ',new_line)
 def match_macroses(file_path,macro_table):
     '''process all files'''
     lines = []
     with open(file_path,"r") as f:
         for line in f:
-            matched = match_macro(macro_table,line)
+            matched = _match_macro(macro_table,line)
             if matched == None:
                 lines.append(line)
             else:
@@ -119,6 +140,7 @@ def match_macroses(file_path,macro_table):
     return lines
 
 def pass_value(line,macro_table):
+    '''pass the value of macro into another one'''
     new_line = []
     words = line.split(' ')
     not_changed_counter = 0
@@ -143,6 +165,7 @@ def pass_value(line,macro_table):
             
             
 def pass_values(lines,macro_table):
+    '''find all macroses in expressions and pass their value'''
     result = []
     for line in lines:
         new_line = pass_value(line,macro_table)

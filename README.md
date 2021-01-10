@@ -15,6 +15,20 @@ There is kind of generative expressions:<br/>
 ***macro -> hello, {4, world }<br/>***
 You will get hello and  world repeated 4 times.
 
+Also you can pass value of macro into the another one:<br/>
+***macro1 -> some expression and $macron***<br/>
+Also macron will be computed and passed to its place.
+
+So, but if you need to write macro name, but don't use this macro?<br/>
+embrace it with ':<br/>
+***'macro'***<br/>
+and this macro won't be computed.
+
+But if you need to pass result of macro into '?<br/>
+Not problem. Type something like this:<br/>
+***''macro''***<br/>
+So you get ***'macro_result'***
+
 Macros will be replaced with expression.<br/>
 To run processor you pass files and macro file with .ko extension as argv:<br/>
 ***python kobold.py source1 source2 source_n macroses.ko***

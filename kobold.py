@@ -2,8 +2,8 @@
 #or even to create completely new language based on another one!
 #exampe of use:$python kobold.py source1.cpp source2.cpp header1.h macro.ko
 #syntax of Kobold is pretty simple
-#macro   = expr
-#macro_n = expr
+#macro   -> expr
+#macro_n -> expr
 #Also there is an ability to generate expression
 #macro = {n,expr} some another expression
 #Instead of macro there will be expression duplicated n times
@@ -12,7 +12,12 @@
 #so you can write this: 'macro' and this macro won't be computed
 #but if you need to pass macro result between quotes?
 #then you need to write just ''macro'' and you will get 'result'
-
+#Also macro can take args:
+#Common syntax:
+#macro# -> some expression #0 and #1, so also write #2
+#so #n means pass argument n if it exists
+#it can be use in generative expressions as well:
+# {6, #3 }
 
 import sys
 from functools import reduce
@@ -112,7 +117,7 @@ def _match_macro(macro_table,line):
         else:
             val_to_set = macro_table[word]
         return val_to_set
-
+    
     for word in words:
         not_empty = len(word) > 0
         pass_val_embraced_with_quotes = word[0:2] == "''" and word[len(word)-2:] == "''"
@@ -177,6 +182,81 @@ def pass_values(lines,macro_table):
             result.append(line)
     return result
 
+def compute_functional_macro_expression(args,macro_expr):
+    '''pass argument values and also compute it'''
+    result = ''
+    words = macro_expr.split(' ')
+    for word in words:
+        if len(word) > 0 and word[0] == '#':
+            word_as_list = list(word[1:])
+            if len(word_as_list) > 0:
+                arg_number = int(word[1:])
+                if arg_number > len(args) or arg_number < 0:
+                    result += ' '
+                else:
+                    #for example len = 2 and you pass 2 as argument number
+                    #so you will get error
+                    #prevent it
+                    if arg_number < len(args):
+                        result += args[arg_number]
+        else:
+            result+= f" {word} "
+    result = result.replace('  ',' ')
+    return result
+def compute_functional_macro(line,macro_table):
+    '''find and compute all functional macroses in line'''
+    words = line.split(' ')
+    results = []
+    counter = 0
+    not_changed_counter = 0
+    while counter < len(words):
+        word = words[counter]
+        #find arguments' list
+        open_brace = word.index('[')
+        close_brace= -1
+        macro_name = ''
+        if open_brace != -1:
+            close_brace = word.index(']')
+
+            #check does such macro exist
+            macro_name = word[:open_brace]+'#'
+            exist = macro_name in macro_table
+            if not exist:
+                not_changed_counter += 1
+                counter += 1
+                continue
+
+        #go to the next word if there are no braces
+        if open_brace == -1 or close_brace == -1:
+            not_changed_counter += 1
+            counter += 1
+            continue
+
+        #get arguments
+        arg_line = word[open_brace+1:close_brace]
+        args = arg_line.split(',')
+        
+        #pass arguments
+        expr = macro_table[macro_name]
+        sub_result = compute_functional_macro_expression(args,expr)
+        sub_result = compute_generative_expression(sub_result,macro_table)
+        sub_result = compute_functional_macro_expression(args,sub_result)
+        results.append(sub_result)
+        counter += 1
+
+    if not_changed_counter == len(words):
+        return line
+    else:
+        return reduce(lambda x,y:x+' '+y+' ',results)
+        
+def compute_functional_macroses(lines,macro_table):
+    '''macro can take arguments'''
+    result = []
+    for line in lines:
+        resulting_line = compute_functional_macro(line,macro_table)
+        result.append(resulting_line)
+    return result
+
 def write_result(file_path,lines):
     with open(file_path,"w") as f:
         f.seek(0)
@@ -195,4 +275,5 @@ macro_table= parse(read(macro_file))
 for file in files_to_change:
    lines = match_macroses(file,macro_table)
    lines = pass_values(lines,macro_table)
+   lines = compute_functional_macroses(lines,macro_table)
    write_result(file,lines)

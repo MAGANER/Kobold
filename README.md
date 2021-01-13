@@ -34,6 +34,9 @@ In common way it looks so:<br/>
 ***macro# -> some word is #0 and you know what is #1<br/>***
 In file write:***macro[arg0, arg1]***
 
+Also when you use argument you must split with space<br/>
+And every macro must be ended with space!
+
 
 Macros will be replaced with expression.<br/>
 To run processor you pass files and macro file with .ko extension as argv:<br/>

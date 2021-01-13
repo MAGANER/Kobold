@@ -37,7 +37,7 @@ In file write:***macro[arg0, arg1]***
 Also when you use argument you must split with space<br/>
 And every macro must be ended with space!
 
-#Options
+# Options
 There are bunch of functions and you can apply them to files:<br/>
 All of the starts with -<br/>
 

@@ -47,6 +47,7 @@ List:<br/>
 2. -ea means erase all. Also you need to pass = after and value to erase<br/>
 Example:***-ea=rep***<br/>
 3. -s means save file copy before any change.<br/>
+4. -c means count all elements in file and print where it is.<br/>
 
 
 Macros will be replaced with expression.<br/>

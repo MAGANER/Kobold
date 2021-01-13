@@ -311,12 +311,16 @@ macro_file = files[0]
 files_to_change = files[1]
 options = files[2]
 
+#there is an ability to apply options only to file
+#so check is this ability active
 macro_table = {}
 if "-oo" not in options:
     macro_table= parse(read(macro_file))
 
 lines = []
 for file in files_to_change:
+   #if only options ability is on
+   #file must be loaded
    if "-oo" in options:
        lines = read(file)
 

@@ -48,6 +48,8 @@ List:<br/>
 Example:***-ea=rep***<br/>
 3. -s means save file copy before any change.<br/>
 4. -c means count all elements in file and print where it is.<br/>
+5. -ra means replace all old strings to the new ones<br/>
+Example:***-ra=old:new***
 
 
 Macros will be replaced with expression.<br/>

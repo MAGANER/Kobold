@@ -41,7 +41,7 @@ def separate(files):
             
         if ".ko" not in f and f[0] != '-':
             sources.append(f)
-    if len(macro_file) == 0:
+    if len(macro_file) == 0 and '-oo' not in options:
         print("you should pass macro file!")
         exit(-1)
 
@@ -305,13 +305,21 @@ def write_result(file_path,lines):
             f.write(line)        
 
 
+
 files = separate(get_files())
 macro_file = files[0]
 files_to_change = files[1]
 options = files[2]
-macro_table= parse(read(macro_file))
 
+macro_table = {}
+if "-oo" not in options:
+    macro_table= parse(read(macro_file))
+
+lines = []
 for file in files_to_change:
+   if "-oo" in options:
+       lines = read(file)
+
    lines = match_macroses(file,macro_table)
    lines = pass_values(lines,macro_table)
    lines = compute_functional_macroses(lines,macro_table)

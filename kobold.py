@@ -274,7 +274,21 @@ def erase_all(lines, val_to_erase):
     result = []
     for line in lines:
         result.append(line.replace(val_to_erase,''))
-    return result 
+    return result
+
+def find_and_count_all(lines,val_to_process):
+    '''find the line, where the symbol is
+       also it counts its number'''
+    result = []
+    line_counter = 0
+    for line in lines:
+        if val_to_process in line:
+            words = line.split(val_to_process)
+            number= len(words) -1
+            answer = f"line number={line_counter} and element number in line={number}"
+            result.append(answer)
+        line_counter += 1
+    return result
 def get_option_data(option):
     '''return pair of name and name, if it exists'''
     _option = ''
@@ -293,6 +307,14 @@ def process_options(options,lines):
         data = get_option_data(option)
         if data[0] == 'ea':
             result = erase_all(result,data[1])
+        if data[0] == 'c':
+            _result = find_and_count_all(result,data[1])
+            if len(_result) == 0:
+                print(f"{data[1]} is not found in file!")
+            else:
+                for l in _result:
+                    print(l)
+            return None
     return result
 ####
 
@@ -335,5 +357,7 @@ for file in files_to_change:
    lines = pass_values(lines,macro_table)
    lines = compute_functional_macroses(lines,macro_table)
    if len(options) > 0:
-       lines = process_options(options,lines)
+       result = process_options(options,lines)
+       if result != None:
+           lines = result
    write_result(file,lines)

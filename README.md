@@ -1,8 +1,9 @@
 # Kobold
 macro-processor
 
-This is simple macro-processor can be used for simple text replacing, but 
-also there can be complex expression computed before string replacing.
+This is simple macro-processor can be used for simple text replacing, but<br/>
+also there can be complex expression computed before string replacing.<br/>
+As an additional ability it has amount of optional functions.(Some of functions are planned only)<br/>
 
 # Syntax
 In common way:<br/>

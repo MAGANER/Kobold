@@ -288,11 +288,11 @@ def get_option_data(option):
     return (_option,val)
 def process_options(options,lines):
     '''apply option function to file data'''
-    result = []
+    result = lines
     for option in options:
         data = get_option_data(option)
         if data[0] == 'ea':
-            result = erase_all(lines,data[1])
+            result = erase_all(result,data[1])
     return result
 ####
 
@@ -317,13 +317,20 @@ macro_table = {}
 if "-oo" not in options:
     macro_table= parse(read(macro_file))
 
+#-s options says it's needed to save original file version
+#before applying any change
+if "-s" in options:
+    for file in files_to_change:
+        lines = read(file)
+        write_result(file.replace('.','original.'),lines)
+    
 lines = []
 for file in files_to_change:
    #if only options ability is on
    #file must be loaded
    if "-oo" in options:
        lines = read(file)
-
+    
    lines = match_macroses(file,macro_table)
    lines = pass_values(lines,macro_table)
    lines = compute_functional_macroses(lines,macro_table)

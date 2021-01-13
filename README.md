@@ -46,6 +46,7 @@ List:<br/>
 1. -oo means option only. So you can use optional functions only<br/>
 2. -ea means erase all. Also you need to pass = after and value to erase<br/>
 Example:***-ea=rep***<br/>
+3. -s means save file copy before any change.<br/>
 
 
 Macros will be replaced with expression.<br/>

@@ -39,7 +39,7 @@ def separate(files):
         elif f[0] == '-':
             options.append(f)
             
-        if ".ko" not in f:
+        if ".ko" not in f and f[0] != '-':
             sources.append(f)
     if len(macro_file) == 0:
         print("you should pass macro file!")
@@ -277,19 +277,19 @@ def erase_all(lines, val_to_erase):
     return result 
 def get_option_data(option):
     '''return pair of name and name, if it exists'''
-    eq = option.index('=')
     _option = ''
     val = ''
-    if eq == -1:
+    if '=' not in option:
         _option = option[1:]
     else:
+        eq = option.index('=')
         _option = option[1:eq]
         val = option[eq+1:]
     return (_option,val)
 def process_options(options,lines):
     '''apply option function to file data'''
     result = []
-    for option in lines:
+    for option in options:
         data = get_option_data(option)
         if data[0] == 'ea':
             result = erase_all(lines,data[1])
@@ -315,4 +315,6 @@ for file in files_to_change:
    lines = match_macroses(file,macro_table)
    lines = pass_values(lines,macro_table)
    lines = compute_functional_macroses(lines,macro_table)
+   if len(options) > 0:
+       lines = process_options(options,lines)
    write_result(file,lines)

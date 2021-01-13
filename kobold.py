@@ -275,7 +275,13 @@ def erase_all(lines, val_to_erase):
     for line in lines:
         result.append(line.replace(val_to_erase,''))
     return result
-
+def replace_all(lines, old, new):
+    '''change old value to new one'''
+    result = []
+    for line in lines:
+        new_one = line.replace(old,new)
+        result.append(new_one)
+    return result
 def find_and_count_all(lines,val_to_process):
     '''find the line, where the symbol is
        also it counts its number'''
@@ -315,6 +321,9 @@ def process_options(options,lines):
                 for l in _result:
                     print(l)
             return None
+        if data[0] == 'ra':
+            vals = data[1].split(':')
+            result = replace_all(result,vals[0],vals[1])
     return result
 ####
 

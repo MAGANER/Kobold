@@ -29,6 +29,12 @@ Not problem. Type something like this:<br/>
 ***''macro''***<br/>
 So you get ***'macro_result'***
 
+Now i want to show functional macro:<br/>
+In common way it looks so:<br/>
+***macro# -> some word is #0 and you know what is #1<br/>***
+In file write:***macro[arg0, arg1]***
+
+
 Macros will be replaced with expression.<br/>
 To run processor you pass files and macro file with .ko extension as argv:<br/>
 ***python kobold.py source1 source2 source_n macroses.ko***

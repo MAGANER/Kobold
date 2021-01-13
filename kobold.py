@@ -29,12 +29,15 @@ def separate(files):
     '''separates terminal arguments to get sources and macro file'''
     macro_file = ""
     sources    = []
+    options    = []
     for f in files:
         if ".ko" in f and len(macro_file) == 0:
             macro_file = f
         elif ".ko" in f:
             print(f"can not get more than 1 macro file {f} is not allowed!")
             exit(-1)
+        elif f[0] == '-':
+            options.append(f)
             
         if ".ko" not in f:
             sources.append(f)
@@ -42,7 +45,7 @@ def separate(files):
         print("you should pass macro file!")
         exit(-1)
 
-    return (macro_file,sources)
+    return (macro_file,sources,options)
 def read(macro_file):
     lines = []
     with open(macro_file) as f:
@@ -212,37 +215,44 @@ def compute_functional_macro(line,macro_table):
     while counter < len(words):
         word = words[counter]
         #find arguments' list
-        open_brace = word.index('[')
+
+        open_brace = -1
         close_brace= -1
         macro_name = ''
-        if open_brace != -1:
-            close_brace = word.index(']')
+        if '[' in word and ']' in word:
+            open_brace = word.index('[')
+            if open_brace != -1:
+                close_brace = word.index(']')
 
-            #check does such macro exist
-            macro_name = word[:open_brace]+'#'
-            exist = macro_name in macro_table
-            if not exist:
-                not_changed_counter += 1
-                counter += 1
-                continue
+                #check does such macro exist
+                macro_name = word[:open_brace]+'#'
+                exist = macro_name in macro_table
+                if not exist:
+                    not_changed_counter += 1
+                    counter += 1
+                    continue
 
-        #go to the next word if there are no braces
-        if open_brace == -1 or close_brace == -1:
+                #go to the next word if there are no braces
+                if open_brace == -1 or close_brace == -1:
+                    not_changed_counter += 1
+                    counter += 1
+                    continue
+
+            #get arguments
+            arg_line = word[open_brace+1:close_brace]
+            args = arg_line.split(',')
+        
+            #pass arguments
+            expr = macro_table[macro_name]
+            sub_result = compute_functional_macro_expression(args,expr)
+            sub_result = compute_generative_expression(sub_result,macro_table)
+            sub_result = compute_functional_macro_expression(args,sub_result)
+            results.append(sub_result)
+            
+            counter += 1
+        else:
             not_changed_counter += 1
             counter += 1
-            continue
-
-        #get arguments
-        arg_line = word[open_brace+1:close_brace]
-        args = arg_line.split(',')
-        
-        #pass arguments
-        expr = macro_table[macro_name]
-        sub_result = compute_functional_macro_expression(args,expr)
-        sub_result = compute_generative_expression(sub_result,macro_table)
-        sub_result = compute_functional_macro_expression(args,sub_result)
-        results.append(sub_result)
-        counter += 1
 
     if not_changed_counter == len(words):
         return line
@@ -257,19 +267,48 @@ def compute_functional_macroses(lines,macro_table):
         result.append(resulting_line)
     return result
 
+
+#option processing
+def erase_all(lines, val_to_erase):
+    ''' delete every passed value in each line'''
+    result = []
+    for line in lines:
+        result.append(line.replace(val_to_erase,''))
+    return result 
+def get_option_data(option):
+    '''return pair of name and name, if it exists'''
+    eq = option.index('=')
+    _option = ''
+    val = ''
+    if eq == -1:
+        _option = option[1:]
+    else:
+        _option = option[1:eq]
+        val = option[eq+1:]
+    return (_option,val)
+def process_options(options,lines):
+    '''apply option function to file data'''
+    result = []
+    for option in lines:
+        data = get_option_data(option)
+        if data[0] == 'ea':
+            result = erase_all(lines,data[1])
+    return result
+####
+
 def write_result(file_path,lines):
     with open(file_path,"w") as f:
         f.seek(0)
         f.truncate()
 
         for line in lines:
-            f.write(line)
-        
+            f.write(line)        
 
 
 files = separate(get_files())
 macro_file = files[0]
 files_to_change = files[1]
+options = files[2]
 macro_table= parse(read(macro_file))
 
 for file in files_to_change:

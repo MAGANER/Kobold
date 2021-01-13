@@ -37,6 +37,15 @@ In file write:***macro[arg0, arg1]***
 Also when you use argument you must split with space<br/>
 And every macro must be ended with space!
 
+#Options
+There are bunch of functions and you can apply them to files:<br/>
+All of the starts with -<br/>
+
+List:<br/>
+1. -oo means option only. So you can use optional functions only<br/>
+2. -ea means erase all. Also you need to pass = after and value to erase<br/>
+Example:***-ea=rep***<br/>
+
 
 Macros will be replaced with expression.<br/>
 To run processor you pass files and macro file with .ko extension as argv:<br/>
